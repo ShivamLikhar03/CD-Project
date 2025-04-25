@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Array Address Calculation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .example {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .interactive {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #tac-output {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Three Address Code Generation for 3D Arrays</h1>
+    
+    <p>Three address code is an intermediate representation used by compilers where each instruction typically has at most three operands. When dealing with array accesses, especially multi-dimensional arrays, address calculation becomes important.</p>
+    
+    <h2>Address Calculation for 3D Arrays</h2>
+    
+    <p>For a 3D array declared as <code>arr[d1][d2][d3]</code>, the address of element <code>arr[i][j][k]</code> can be calculated using the following formula in row-major order:</p>
+    
+    <pre>BaseAddress + (((i × d2) + j) × d3 + k) × element_size</pre>
+    
+    <p>Where:</p>
+    <ul>
+        <li><code>BaseAddress</code> is the starting address of the array</li>
+        <li><code>d1, d2, d3</code> are the dimensions of the array</li>
+        <li><code>i, j, k</code> are the indices being accessed</li>
+        <li><code>element_size</code> is the size of each element in bytes</li>
+    </ul>
+    
+    <h2>Three Address Code Generation Example</h2>
+    
+    <p>Consider the following C-like 3D array access:</p>
+    
+    <pre>int arr[10][20][30];
+arr[i][j][k] = x + y;</pre>
+    
+    <p>The three address code for this operation would be:</p>
+    
+    <pre>t1 = i * 20          // i × d2
+t2 = t1 + j         // (i × d2) + j
+t3 = t2 * 30        // ((i × d2) + j) × d3
+t4 = t3 + k         // ((i × d2) + j) × d3 + k
+t5 = t4 * 4         // multiply by element size (4 bytes for int)
+t6 = arr + t5       // base address + offset
+t7 = x + y          // compute the right-hand side
+*(t6) = t7          // store result at computed address</pre>
+    
+    <div class="interactive">
+        <h2>Interactive Three Address Code Generator</h2>
+        
+        <p>Enter array parameters and statement to generate three address code:</p>
+        
+        <label for="base-address">Base Address:</label>
+        <input type="number" id="base-address" value="1000"><br>
+        
+        <label for="array-dims">Array Dimensions (comma separated):</label>
+        <input type="text" id="array-dims" value="10,20,30" placeholder="e.g., 10,20,30"><br>
+        
+        <label for="element-size">Element Size (bytes):</label>
+        <input type="number" id="element-size" value="4"><br>
+        
+        <label for="array-indices">Array Indices (comma separated):</label>
+        <input type="text" id="array-indices" value="i,j,k" placeholder="e.g., i,j,k"><br>
+        
+        <label for="index-values">Index Values (comma separated):</label>
+        <input type="text" id="index-values" value="2,3,4" placeholder="e.g., 2,3,4"><br>
+        
+        <label for="statement-type">Statement Type:</label>
+        <select id="statement-type">
+            <option value="assignment">Assignment (arr[i][j][k] = x + y)</option>
+            <option value="reference">Reference (z = arr[i][j][k])</option>
+        </select><br>
+        
+        <div id="assignment-values" class="statement-input">
+            <label for="left-operand">Left Operand:</label>
+            <input type="text" id="left-operand" value="x" placeholder="e.g., x"><br>
+            
+            <label for="operator">Operator:</label>
+            <select id="operator">
+                <option value="+">+</option>
+                <option value="-">-</option>
+                <option value="*">*</option>
+                <option value="/">/</option>
+            </select><br>
+            
+            <label for="right-operand">Right Operand:</label>
+            <input type="text" id="right-operand" value="y" placeholder="e.g., y"><br>
+            
+            <label for="left-value">Value of Left Operand:</label>
+            <input type="number" id="left-value" value="5"><br>
+            
+            <label for="right-value">Value of Right Operand:</label>
+            <input type="number" id="right-value" value="7"><br>
+        </div>
+        
+        <div id="reference-values" class="statement-input" style="display:none;">
+            <label for="result-var">Result Variable:</label>
+            <input type="text" id="result-var" value="z" placeholder="e.g., z"><br>
+        </div>
+        
+        <button id="generate-button">Generate Three Address Code</button>
+        
+        <div id="tac-output"></div>
+    </div>
+    
+    
+    
+    <h2>Row-major vs Column-major Order</h2>
+    
+    <p>The above calculation assumes row-major order. In column-major order (used by Fortran, MATLAB, etc.), the calculation would be different:</p>
+    
+    <pre>BaseAddress + (((k × d1) + j) × d2 + i) × element_size</pre>
+    
+    <h2>Compiler Implementation</h2>
+    
+    <p>Compilers typically generate this three address code during the intermediate code generation phase. The steps involve:</p>
+    
+    <ol>
+        <li>Calculating the offset within the array</li>
+        <li>Multiplying by the element size</li>
+        <li>Adding to the base address</li>
+        <li>Dereferencing to get/set the value</li>
+    </ol>
+    
+    <script>
+        // Global variables
+        let tacGenerator = {
+            // Configuration options
+            config: {
+                baseAddress: 1000,
+                dimensions: [10, 20, 30],
+                elementSize: 4,
+                indexNames: ['i', 'j', 'k'],
+                indexValues: [2, 3, 4],
+                statementType: 'assignment',
+                operators: {
+                    assignment: {
+                        leftOperand: 'x',
+                        operator: '+',
+                        rightOperand: 'y',
+                        leftValue: 5,
+                        rightValue: 7
+                    },
+                    reference: {
+                        resultVar: 'z'
+                    }
+                }
+            },
+            
+            // Initialize the application
+            init: function() {
+                // Set up event listeners
+                this.setupEventListeners();
+                
+                // Initialize form with default values
+                this.loadFormValues();
+            },
+            
+            // Set up all event listeners
+            setupEventListeners: function() {
+                // Statement type change handler
+                document.getElementById('statement-type').addEventListener('change', function() {
+                    tacGenerator.toggleStatementInputs();
+                });
+                
+                // Generate button click handler
+                document.getElementById('generate-button').addEventListener('click', function() {
+                    tacGenerator.generateTAC();
+                });
+            },
+            
+            // Show/hide appropriate inputs based on statement type
+            toggleStatementInputs: function() {
+                const type = document.getElementById('statement-type').value;
+                if (type === 'assignment') {
+                    document.getElementById('assignment-values').style.display = 'block';
+                    document.getElementById('reference-values').style.display = 'none';
+                } else {
+                    document.getElementById('assignment-values').style.display = 'none';
+                    document.getElementById('reference-values').style.display = 'block';
+                }
+            },
+            
+            // Load form values from config
+            loadFormValues: function() {
+                document.getElementById('base-address').value = this.config.baseAddress;
+                document.getElementById('array-dims').value = this.config.dimensions.join(',');
+                document.getElementById('element-size').value = this.config.elementSize;
+                document.getElementById('array-indices').value = this.config.indexNames.join(',');
+                document.getElementById('index-values').value = this.config.indexValues.join(',');
+                document.getElementById('statement-type').value = this.config.statementType;
+                
+                // Assignment values
+                document.getElementById('left-operand').value = this.config.operators.assignment.leftOperand;
+                document.getElementById('operator').value = this.config.operators.assignment.operator;
+                document.getElementById('right-operand').value = this.config.operators.assignment.rightOperand;
+                document.getElementById('left-value').value = this.config.operators.assignment.leftValue;
+                document.getElementById('right-value').value = this.config.operators.assignment.rightValue;
+                
+                // Reference values
+                document.getElementById('result-var').value = this.config.operators.reference.resultVar;
+                
+                // Set initial visibility
+                this.toggleStatementInputs();
+            },
+            
+            // Get all input values from the form
+            getFormValues: function() {
+                this.config.baseAddress = parseInt(document.getElementById('base-address').value);
+                this.config.dimensions = document.getElementById('array-dims').value.split(',').map(Number);
+                this.config.elementSize = parseInt(document.getElementById('element-size').value);
+                this.config.indexNames = document.getElementById('array-indices').value.split(',').map(s => s.trim());
+                this.config.indexValues = document.getElementById('index-values').value.split(',').map(Number);
+                this.config.statementType = document.getElementById('statement-type').value;
+                
+                if (this.config.statementType === 'assignment') {
+                    this.config.operators.assignment.leftOperand = document.getElementById('left-operand').value;
+                    this.config.operators.assignment.operator = document.getElementById('operator').value;
+                    this.config.operators.assignment.rightOperand = document.getElementById('right-operand').value;
+                    this.config.operators.assignment.leftValue = document.getElementById('left-value').value;
+                    this.config.operators.assignment.rightValue = document.getElementById('right-value').value;
+                } else {
+                    this.config.operators.reference.resultVar = document.getElementById('result-var').value;
+                }
+            },
+            
+            // Validate the input values
+            validateInput: function() {
+                if (this.config.dimensions.length !== this.config.indexNames.length || 
+                    this.config.dimensions.length !== this.config.indexValues.length) {
+                    return false;
+                }
+                return true;
+            },
+            
+            // Generate TAC for 1D array
+            generateTAC1D: function(tac, temp) {
+                tac.push(`t${temp} = ${this.config.indexValues[0]} * ${this.config.elementSize}`);
+                return temp + 1;
+            },
+            
+            // Generate TAC for multi-dimensional array
+            generateTACMultiD: function(tac, temp) {
+                let formula = [];
+                
+                // Start with innermost calculation
+                tac.push(`t${temp} = ${this.config.indexValues[0]} * ${this.config.dimensions[1]}`);
+                formula.push(`${this.config.indexNames[0]} * ${this.config.dimensions[1]}`);
+                temp++;
+                
+                // Add next index
+                tac.push(`t${temp} = t${temp-1} + ${this.config.indexValues[1]}`);
+                formula.push(`(${formula[formula.length-1]}) + ${this.config.indexNames[1]}`);
+                temp++;
+                
+                // Handle additional dimensions if they exist
+                for (let i = 2; i < this.config.dimensions.length; i++) {
+                    tac.push(`t${temp} = t${temp-1} * ${this.config.dimensions[i]}`);
+                    formula.push(`(${formula[formula.length-1]}) * ${this.config.dimensions[i]}`);
+                    temp++;
+                    
+                    tac.push(`t${temp} = t${temp-1} + ${this.config.indexValues[i]}`);
+                    formula.push(`(${formula[formula.length-1]}) + ${this.config.indexNames[i]}`);
+                    temp++;
+                }
+                
+                // Final calculation for byte offset
+                tac.push(`t${temp} = t${temp-1} * ${this.config.elementSize}`);
+                return temp + 1;
+            },
+            
+            // Generate assignment statement TAC
+            generateAssignmentTAC: function(tac, temp) {
+                const left = this.config.operators.assignment.leftOperand;
+                const op = this.config.operators.assignment.operator;
+                const right = this.config.operators.assignment.rightOperand;
+                const leftVal = this.config.operators.assignment.leftValue;
+                const rightVal = this.config.operators.assignment.rightValue;
+                
+                tac.push(`t${temp} = ${leftVal} ${op} ${rightVal}  // ${left} ${op} ${right}`);
+                temp++;
+                tac.push(`*(t${temp-2}) = t${temp-1}  // Store result at computed address`);
+                
+                return temp;
+            },
+            
+            // Generate reference statement TAC
+            generateReferenceTAC: function(tac, temp) {
+                const resultVar = this.config.operators.reference.resultVar;
+                tac.push(`${resultVar} = *(t${temp-1})  // Load value from computed address`);
+                return temp;
+            },
+            
+            // Generate data type based on element size
+            getDataTypeFromSize: function(size) {
+                switch(size) {
+                    case 1: return 'char';
+                    case 2: return 'short';
+                    case 4: return 'int';
+                    case 8: return 'double';
+                    default: return 'int';
+                }
+            },
+            
+            // Generate the three address code
+            generateTAC: function() {
+                // Update config from form
+                this.getFormValues();
+                
+                // Validate input
+                if (!this.validateInput()) {
+                    document.getElementById('tac-output').innerHTML = 
+                        '<strong>Error:</strong> Number of dimensions must match number of indices.';
+                    return;
+                }
+                
+                // Generate TAC based on dimensions
+                let tac = [];
+                let temp = 1;
+                
+                // Generate dimension calculation code
+                if (this.config.dimensions.length === 1) {
+                    // 1D array
+                    temp = this.generateTAC1D(tac, temp);
+                } else {
+                    // Multi-dimensional array
+                    temp = this.generateTACMultiD(tac, temp);
+                }
+                
+                // Calculate final address
+                tac.push(`t${temp} = ${this.config.baseAddress} + t${temp-1}`);
+                temp++;
+                
+                // Generate statement-specific code
+                if (this.config.statementType === 'assignment') {
+                    temp = this.generateAssignmentTAC(tac, temp);
+                } else {
+                    temp = this.generateReferenceTAC(tac, temp);
+                }
+                
+                // Display result
+                this.displayResult(tac);
+            },
+            
+            // Display the result
+            displayResult: function(tac) {
+                // Generate output details
+                const arrayDeclaration = `${this.getDataTypeFromSize(this.config.elementSize)} arr[${this.config.dimensions.join('][')}]`;
+                const arrayAccess = `arr[${this.config.indexNames.join('][')}]`;
+                let statement;
+                
+                if (this.config.statementType === 'assignment') {
+                    const left = this.config.operators.assignment.leftOperand;
+                    const op = this.config.operators.assignment.operator;
+                    const right = this.config.operators.assignment.rightOperand;
+                    statement = `${arrayAccess} = ${left} ${op} ${right}`;
+                } else {
+                    const resultVar = this.config.operators.reference.resultVar;
+                    statement = `${resultVar} = ${arrayAccess}`;
+                }
+                
+                // Display output
+                const outputDiv = document.getElementById('tac-output');
+                outputDiv.innerHTML = `
+                    <strong>Statement:</strong> ${statement}<br>
+                    <strong>Array Declaration:</strong> ${arrayDeclaration}<br><br>
+                    <strong>Generated Three Address Code:</strong><br><br>` + 
+                    tac.join('<br>');
+            }
+        };
+        
+        // Initialize the application when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            tacGenerator.init();
+        });
+    </script>
+</body>
+</html>
